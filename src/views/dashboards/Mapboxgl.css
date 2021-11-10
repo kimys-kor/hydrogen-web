@@ -1,0 +1,12 @@
+.navi-control {
+    position: absolute;
+    }
+    
+.btn-marker {
+    width: 22px;
+    height: 35px;
+    border: none;
+    }
+    .btn-marker:focus {
+    outline: transparent;
+    }
