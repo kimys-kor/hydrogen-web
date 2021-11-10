@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Button, Row, Col, Card} from 'react-bootstrap';
 import { OverlayScrollbarsComponent } from 'overlayscrollbars-react';
-import { NavLink } from 'react-router-dom';
+import { NavLink, Link } from 'react-router-dom';
 import { Steps } from 'intro.js-react';
 import HtmlHead from 'components/html-head/HtmlHead';
 import CsLineIcons from 'cs-line-icons/CsLineIcons';
@@ -14,6 +14,8 @@ import Mapbox from 'views/dashboards/Mapboxgl';
 import axios from 'axios';
 import "./DashboardsDefault.scss"
 import Modal from 'react-bootstrap/Modal'
+import {useForm} from "react-hook-form";
+
 
 
 // axios.defaults.baseURL = "http://127.0.0.1:8000/api" 
@@ -23,26 +25,18 @@ const URL = 'http://api-2108.bs-soft.co.kr/mt10-hydro-detection-fbe3d/us-central
 const DashboardsDefault = () => {
   const [devicelist, setdevicelist] = useState([]);
   const [gridModal, setgridModal] = useState(false);
+  const [visible, setVisible] = useState(false);
 
-
-  const [deviceId, setdeviceId] = useState("");
-  const changeid = (e)=>{
-
-    setdeviceId(e.target.value);
-    console.log(deviceId)
+  function editing(){
+    setVisible(!visible);
   }
-  const [deviceLocation, setdeviceLocation] = useState("");
-  const changelocation = (e)=>{
 
-    setdeviceLocation(e.target.value);
-    console.log(deviceLocation)
-  }
-  const submitting = ()=>{
-    console.log(devicelist)
-    console.log(deviceLocation)
-  }
+  const { register, handleSubmit } = useForm();
+  const [result, setResult] = useState("");
+  const onSubmit = (data) => {
+      setResult(JSON.stringify(data))
+    };
   
-
 
   useEffect(()=>{
       axios.get(URL).then((response)=>{
@@ -121,11 +115,21 @@ const DashboardsDefault = () => {
 
       return (
         <>
+        {visible ?     <Card >
+                      <form onSubmit={handleSubmit(onSubmit)} display="disable">
+                        <input {...register("deviceId")} placeholder="deviceId" />
+                        <input {...register("deviceLocation")} placeholder="deviceLocation" />
+
+                        <p>{result}</p>
+                        <input type="submit" />
+                      </form>
+                      </Card> : null}
+        
           {devicelist.map((item, index) => (
               <Card className="mb-2 h-5 sh-xl-24" id="introSecond" key={index}>
               <Row className="g-2 h-100"> 
                 <Col xs="auto">
-                  <NavLink to="/pages/portfolio/detail">
+                  <NavLink to="/">
                     <img src="/img/product/small/hydro.jpg" alt="user" className="card-img card-img-horizontal sw-13 sw-lg-15" />
                   </NavLink>
                 </Col>
@@ -133,38 +137,42 @@ const DashboardsDefault = () => {
                   <Card.Body className="pt-0 pb-0 h-100">
                     <Row className="g-0 h-100 align-content-center">
                       <Col md="7" className="d-flex flex-column mb-2 mb-md-0">
-                        <NavLink to="/pages/portfolio/detail">기기ID</NavLink>
+                        <NavLink to="/">기기ID</NavLink>
                         <div className="text-small text-muted text-truncate">{item.deviceId}</div>
                       </Col>
                       <Col md="7" className="d-flex flex-column mb-2 mb-md-0">
-                        <NavLink to="/pages/portfolio/detail">설치장소</NavLink>
+                        <NavLink to="/">설치장소</NavLink>
                         <div className="text-small text-muted text-truncate">{item.deviceLocation}</div>
                       </Col>
                       <Col md="5" className="d-flex align-items-center justify-content-md-end">
-                        <Button onClick={()=> setgridModal(true)} variant="outline-primary" size="sm" className="btn-icon btn-icon-start ms-1">
-                          <CsLineIcons icon="edit-square" width="15" height="15" className="me-xxl-2" />
-                          <span className="d-none d-xxl-inline-block">Edit</span>
-                        </Button>
                         
-                        <form onSubmit={submitting()}>
+          
+                        <Button  onClick={()=> setgridModal(true)} variant="outline-primary" size="sm" className="btn-icon btn-icon-start ms-1">
+                          <CsLineIcons icon="edit-square" width="15" height="15" className="me-xxl-2" />
+                          <span onClick={editing} className="d-none d-xxl-inline-block">Edit</span>
+                        </Button>
+              
+                        
+                        {/* <form onSubmit={handleSubmit(onSubmit)}>
                         <Modal backdrop='static' show={gridModal} onHide={() => setgridModal(false)} >
                         <Modal.Header closeButton>
                           <Modal.Title>디바이스 수정</Modal.Title>
                         </Modal.Header>
 
                         <Modal.Body>
-                          <input value={deviceId} onChange={changeid} placeholder="기기ID"/><br/>
-                          <input value={deviceLocation} onChange={changelocation} placeholder="설치장소"/>
+                          <input {...register("deviceId")} placeholder="기기ID"/><br/>
+                          <input {...register("deviceLocation")} placeholder="설치장소"/>
                         </Modal.Body>
 
                         <Modal.Footer>
                           <Button variant="secondary" onClick={() => setgridModal(false)}>
                             Close
                           </Button>
-                          <Button onClick={() => setgridModal(false)}>Save changes</Button>
+                          <Button type="submit" onClick={() => setgridModal(false)}>Save changes</Button>
+                          <input type="submit" onClick={() => setgridModal(false)}/>
                         </Modal.Footer>
                         </Modal>
-                        </form>
+                        </form> */}
                         
                         <Button variant="outline-primary" size="sm" className="btn-icon btn-icon-start ms-1">
                           <CsLineIcons icon="bin" width="15" height="15" className="me-xxl-2" />
@@ -262,11 +270,12 @@ const DashboardsDefault = () => {
       {/* Title and Top Buttons End */}
 
       <h1>수소 탐지 시스템 </h1>
+      <h1>{result} 킹받네</h1>
       <Row>
         <Col xl="4" className="mb-5">
-          <h2 className="small-title">디바이스<Button variant="outline-primary" size="sm" className="btn-icon btn-icon-start ms-1" style={{marginLeft:"100px"}}>
+          <h2 className="small-title">디바이스<Button  variant="outline-primary" size="sm" className="btn-icon btn-icon-start ms-1" style={{marginLeft:"100px"}}>
                           <CsLineIcons icon="plus" width="15" height="15" className="me-xxl-2" />
-                          <span className="d-none d-xxl-inline-block">Add new device</span>
+                          <span  className="d-none d-xxl-inline-block">Add new device</span>
                         </Button></h2>
           <DeviceCard/>
         </Col>
